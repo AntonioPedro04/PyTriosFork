@@ -9,7 +9,7 @@ import argparse
 
 def calibrateData(filePath):
 
-    calData = rc.importCalFiles(".\CalFolder")
+    calData = rc.importCalFiles('./CalFolder')
 
     calibratedData = []
 
