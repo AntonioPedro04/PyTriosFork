@@ -2,10 +2,10 @@ import ramses_calibrate as rc
 import numpy as np
 import argparse
 
-#import debugpy
-#debugpy.listen(("localhost", 5678)) 
-#print("⏳ Waiting for debugger attach...")
-#debugpy.wait_for_client() 
+import debugpy
+debugpy.listen(("localhost", 5600)) 
+print("⏳ Waiting for debugger attach...")
+debugpy.wait_for_client() 
 
 def calibrateData(filePath):
 
