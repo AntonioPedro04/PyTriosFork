@@ -1,6 +1,7 @@
 import ramses_calibrate as rc
 import numpy as np
 import argparse
+import csv
 
 import debugpy
 debugpy.listen(("localhost", 5600)) 
@@ -28,6 +29,8 @@ def calibrateData(filePath):
 
             calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
 
+            calibratedSpec = calibratedSpec[1:193]
+
             print(len(calibratedSpec))
 
             calibratedAll = [serialln, msdate, integrationTime, calibratedSpec]
@@ -36,7 +39,7 @@ def calibrateData(filePath):
     
     return calibratedData
 
-def saveCalibratedData(calibratedData, filePath):
+def saveCalibratedDataTxt(calibratedData, filePath):
     with open(filePath, "w") as f:
 
         for calibratedSample in calibratedData:
@@ -50,6 +53,22 @@ def saveCalibratedData(calibratedData, filePath):
 
             f.write('\n')  
 
+def saveCalibratedDataCsv(calibratedData, filePath):
+
+    wlColumns = np.arange(320,951,3.3)
+    stringColumns = ['serialPort', 'msDate', 'integrationTime']
+
+    allColumnsNames = stringColumns + wlColumns.tolist()
+    
+    calibratedArrayCsv = [sample[:-1] + sample[-1].tolist() for sample in calibratedData]
+    
+    calibratedArrayCsv.insert(0,allColumnsNames)
+
+    with open(filePath, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(calibratedArrayCsv)
+    return 
+
 def parseArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--inputFile', type=str, required=True, help='Path for the input file')
@@ -62,5 +81,6 @@ if __name__ == '__main__':
    args = parseArgs()
 
    calibratedData = calibrateData(args.inputFile)
-   saveCalibratedData(calibratedData, args.outputFile)
+   saveCalibratedDataTxt(calibratedData, args.outputFile + '.txt')
+   saveCalibratedDataCsv(calibratedData, args.outputFile + '.csv')
 
