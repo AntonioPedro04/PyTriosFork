@@ -94,7 +94,7 @@ def plotCalibration(filePath):
         # print(irradianceValues)
 
         ax.plot(waveLengths,irradianceValues)
-        ax.set(xlabel='Wavelenght(nm)', ylabel='Irradiance', title=f'{msDate}', xticks=xTicksVector)
+        ax.set(xlabel='Wavelenght(nm)', ylabel='Irradiance(W/m²)', title=f'{msDate}', xticks=xTicksVector)
         ax.label_outer()
         
     fig.suptitle(f'Serial Port: {serialPort}, Integration Time: {integrationTime}')
@@ -112,9 +112,15 @@ def animateCalibration(filePath):
     waveLengths = [float(x) for x in waveLengths]
     irradianceValues = calibrationDf.iloc[0,3:]
     linePlot = axs.plot(waveLengths,irradianceValues)[0]
+    yTicksVector = np.arange(0, 0.301, 0.05)
+    xTicksVector = np.arange(320, 950, 100)
+
+    axs.set(xlabel='Wavelenght(nm)', ylabel='Irradiance(W/m²)', xticks=xTicksVector, yticks=yTicksVector)
     # plt.show()
 
     def update(frame):
+        curMsDate = calibrationDf.iloc[frame,1] 
+        # axs.set_label(curMsDate)
         irradianceValues = calibrationDf.iloc[frame, 3:]
         linePlot.set_ydata(irradianceValues)
         return linePlot
@@ -124,7 +130,6 @@ def animateCalibration(filePath):
     ani.save(filename="./tmp/pillow_example.mp4", writer="ffmpeg")
 
     return
-
 
 if __name__ == '__main__':
    
@@ -141,4 +146,3 @@ if __name__ == '__main__':
 
     plotCalibration(args.outputFile + '.csv')
     animateCalibration(args.outputFile + '.csv')
-
