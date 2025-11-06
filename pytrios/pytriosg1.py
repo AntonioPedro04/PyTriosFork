@@ -28,7 +28,7 @@ import time
 import struct
 import numpy as np
 import threading
-from pytrios.TClasses import TProtocolError, TPackMeasKeyError, TPacket, TSerial, TCommandSend
+from pySAS.pytriosfork.pytrios.TClasses import TProtocolError, TPackMeasKeyError, TPacket, TSerial, TCommandSend
 
 
 tchannels = {}
