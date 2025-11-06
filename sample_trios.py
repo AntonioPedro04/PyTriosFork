@@ -11,7 +11,7 @@ import datetime
 import argparse
 import logging
 import serial.tools.list_ports as list_ports
-import pySAS.pytriosfork.pytrios.radman as radiometer_manager
+import pySAS.PyTriosFork.pytrios.radman as radiometer_manager
 
 def single_sample(radiometry_manager, inttime, file):
     log.info(f"Trigger measurement")
