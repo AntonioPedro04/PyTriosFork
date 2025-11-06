@@ -18,8 +18,8 @@ import time
 import datetime
 import logging
 import threading
-import pySAS.pytriosfork.pytrios.pytriosg2 as pt2
-import pySAS.pytriosfork.pytrios.pytriosg1 as ps
+import pySAS.PyTriosFork.pytrios.pytriosg2 as pt2
+import pySAS.PyTriosFork.pytrios.pytriosg1 as ps
 from numpy import log2
 
 log = logging.getLogger('rad')
