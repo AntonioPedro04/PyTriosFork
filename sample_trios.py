@@ -103,3 +103,41 @@ if __name__ == '__main__':
 
     else:
         run_sample(args.port, args.repeat, args.type, args.inttime, args.file)
+
+def runSampleFromPySAS(port, repeat=1, type=1, inttime=0, file=None):
+
+    global log
+
+    log = logging.getLogger()
+    handler = logging.StreamHandler(sys.stdout)
+    log.setLevel(logging.INFO)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s| %(levelname)s | %(name)s | %(message)s')
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+
+    if type is None:
+        log.info("No device type selected. Specify G1 or G2 type")
+        sys.exit()
+    elif type == 1:
+        if inttime>0:
+            if inttime not in [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]:
+                log.info("Integration time for G1 sensors must be one of 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192 ms")
+                sys.exit()
+    elif type == 2:
+        if inttime>0:
+            if inttime not in [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]:
+                log.info("Integration time for G2 sensors must be one of 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192 ms")
+                sys.exit()
+    else:
+        log.info("Sensor type must be 1 (G1) or 2 (G2)")
+        sys.exit()
+
+    if port is None:
+        log.info("No device selected. The following are available (select a serial port with the -p argument):")
+        ports = list_ports.comports()
+        for port, desc, hwid in sorted(ports):
+            log.info("\t {0} {1} {2}".format(port, desc, hwid))
+
+    else:
+        run_sample(port, repeat, type, inttime, file)
