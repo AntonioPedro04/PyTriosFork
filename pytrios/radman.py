@@ -224,7 +224,7 @@ class TriosG2Ramses(object):
         if lanstate0 is None:
             log.warning(f"{self.mod['port']}: failed to detect LAN state.")
         else:
-            log.info(f"LAN state: {landstate0}")
+            log.info(f"LAN state: {lanstate0}")
 
         #elif lanstate0:
         #    log.info(f"{self.mod['port']}: disable LAN state.")
@@ -342,7 +342,10 @@ class TriosManager(object):
     """
     def __init__(self, port):
         # import pytrios only if used
-        self.ports = [port]  # list of strings
+        if not type(port) is list:
+            self.ports = [port]
+        else:
+            self.ports = port  # list of strings
         self.coms = ps.TMonitor(self.ports, baudrate=9600)
         self.sams = []
         self.ready = False
@@ -381,7 +384,7 @@ class TriosManager(object):
             for chan in ['02', '04', '06', '08']:
                 # query connected instruments
                 ps.TCommandSend(com, commandset=None, ipschan=chan, command='query')
-        time.sleep(3)  # pause to receive query results
+        time.sleep(10)  # pause to receive query results
         self._identify_sensors()
 
         if len(self.sams) == 0:
