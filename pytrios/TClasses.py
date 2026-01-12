@@ -147,8 +147,14 @@ class TPacket(object):
         tchannel.TInfo.Firmware = self.databytes[3] +\
             0.01 * self.databytes[2]
         # operating freq. in MHz
+        
         freqs = [np.nan, 2, 4, 6, 8, 10, 12, 20]
-        tchannel.TInfo.ModFreq = freqs[self.databytes[4]]
+        
+        freq_index = self.databytes[4]
+        if freq_index < len(freqs):
+            tchannel.TInfo.ModFreq = freqs[freq_index]
+        else:
+            tchannel.TInfo.ModFreq = np.nan
         return tchannel
 
     def MFluReadSettings(self):
