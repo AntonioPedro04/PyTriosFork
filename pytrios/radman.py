@@ -384,13 +384,14 @@ class TriosManager(object):
             for chan in ['02', '04', '06', '08']:
                 # query connected instruments
                 ps.TCommandSend(com, commandset=None, ipschan=chan, command='query')
-        time.sleep(10)  # pause to receive query results
+        time.sleep(3)  # pause to receive query results
         self._identify_sensors()
 
-        if len(self.sams) == 0:
+        if len(self.sams) != 3:
             ps.TClose(self.coms)
             self.ready = False
-            log.critical("no SAM modules found")
+            log.critical("not all SAM modules found")
+            raise MissingSamModulesError("At least one sensor will not read data")
         else:
             self.ready = True
 
@@ -472,3 +473,6 @@ class TriosManager(object):
             ps.TClose(self.coms)
             log.exception("Exception in TriosManager: {}".format(m))
             raise
+
+class MissingSamModulesError(Exception):
+    pass
