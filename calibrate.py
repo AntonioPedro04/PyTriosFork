@@ -1,4 +1,4 @@
-import ramses_calibrate as rc
+import pySAS.PyTriosFork.ramses_calibrate as rc
 import numpy as np
 import argparse
 import csv
@@ -35,6 +35,35 @@ def calibrateData(filePath):
 
             calibratedData.append(calibratedAll)
     
+    return calibratedData
+
+def calibrateDataFromPySAS(deque):
+
+    calData = rc.importCalFiles('./pySAS/PyTriosFork/CalFolder')
+
+    calibratedData = {}
+
+    for line in deque:
+
+        sample = line.split('\t')
+
+        serialln = sample[0]
+        msdate = sample[1]
+        integrationTime = sample[2]
+        specData = sample[3].split(',')
+
+        specData = [int(i) for i in specData]
+
+        calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
+
+        calibratedSpec = calibratedSpec[1:193]
+
+        print(len(calibratedSpec))
+
+        calibratedAll = [serialln, msdate, integrationTime, calibratedSpec]
+
+        calibratedData[serialln] = calibratedAll
+
     return calibratedData
 
 def saveCalibratedDataTxt(calibratedData, filePath):
