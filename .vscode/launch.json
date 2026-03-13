@@ -10,7 +10,7 @@
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": 5600
+        "port": 8001
       }
     },
     {

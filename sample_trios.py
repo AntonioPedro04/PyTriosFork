@@ -21,9 +21,11 @@ def single_sample(radiometry_manager, inttime, file):
     for i, sid in enumerate(sids):
         log.info(f"Received spectrum from {sid}: {trig_id} | int-time: {itimes[i]} ms | Spectrum: {specs[i][0:3]}...{specs[i][-3::]}")
 
+        log.info(f"Received Inclination from {sid}: {trig_id} | Pre Inclination : {preincs[i]} | Post Inclination {postincs[i]} ")
+
         if file is not None:
             with open(file, 'a+') as outfile:
-                outfile.write(f"{str(sid)}\t{trig_id.isoformat()}\t{str(itimes[i])}\t{','.join([str(s) for s in specs[i]])}\n")
+                outfile.write(f"{str(sid)}\t{trig_id.isoformat()}\t{str(itimes[i])}\t{str(preincs[i])} {str(postincs[i])}\t{','.join([str(s) for s in specs[i]])}\n")
 
 
 def run_sample(port, repeat=1, type=1, inttime=0, file=None):
@@ -69,6 +71,12 @@ def parse_args():
 
 
 if __name__ == '__main__':
+
+    import debugpy
+    debugpy.listen(("localhost", 8001)) 
+    print("⏳ Waiting for debugger attach...")
+    debugpy.wait_for_client() 
+
     args = parse_args()
 
     log = logging.getLogger()

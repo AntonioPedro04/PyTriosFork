@@ -130,6 +130,8 @@ def handlePacket(ser, packet):
             elif interpreter == 'SAM':
                 ch = SAMInterpreter(tchannels[port_tid], p)
                 tchannels[port_tid] = ch
+            elif interpreter == 'ADM':
+                ch = SAMIPInterpreter(tchannels[port_tid], p)
         except Exception as emsg:
             raise TProtocolError(emsg)
 
@@ -183,6 +185,17 @@ def SAMInterpreter(regch, packet):
             regch.TSAM.dataframes = [[None]]*8
     return regch
 
+def SAMIPInterpreter(regch, packet):
+
+    if packet.framebyte == 0:
+        regch.TSAMIP.incXByte = packet.incX_byte
+        regch.TSAMIP.incYByte = packet.incY_byte
+    else:
+        emsg = "SAMIP Interpreter: Incomplete tilt, discarded"
+        print(emsg, file=sys.stderr)
+        raise TProtocolError(emsg)
+        # reset to receive the next inclination
+    return regch
 
 def MFInterpreter(regch, packet):
     # byteorder is big endian although documentation suggests different

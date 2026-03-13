@@ -378,7 +378,7 @@ class TriosManager(object):
             # set verbosity for com channel (com messages / errors)
             # 0/1/2 = none, errors, all
             com.verbosity = 1
-            for chan in ['02', '04', '06', '08']:
+            for chan in ['00','02', '04', '06', '08']:
                 # query connected instruments
                 ps.TCommandSend(com, commandset=None, ipschan=chan, command='query')
         time.sleep(3)  # pause to receive query results
@@ -459,8 +459,10 @@ class TriosManager(object):
                     for s in sams_included if self.tc[s].is_finished()]
 
             self.busy = False
-            pre_incs = [None]
-            post_incs = [None]
+            pre_incs = [self.tc[s].TSAMIP.incXByte
+                    for s in sams_included if self.tc[s].is_finished()]
+            post_incs = [self.tc[s].TSAMIP.incYByte
+                    for s in sams_included if self.tc[s].is_finished()]
             temp_incs = [None]
             # specs, sids, itimes may be empty lists, Last three fields for forward compatibility
             return trigger_id, specs, sids, itimes, pre_incs, post_incs, temp_incs

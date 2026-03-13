@@ -107,6 +107,11 @@ class TPacket(object):
         self.tid3 = hex(self.moduleID)[2:].zfill(2)
         self.TID = self.tid1 + self.tid2 + self.tid3
 
+        if self.moduleID == 32:
+            self.packetType = 'measurement'
+            self.incX_byte = Data[10]
+            self.incY_byte = Data[11]
+            return
         # PacketType
         if self.framebyte == 254:
             # sensor reports error
@@ -224,6 +229,18 @@ class TSAM(object):
         ltime = self.lastRawSAMTime
         msg = "<PyTrios SAM, last measurement at {0}>".format(ltime)
         return msg
+    
+class TSAMIP(object):
+    """Represents a SAMIP instrument (only the stuff a SAM sensor cannot do):\n
+    *Settings* = Sensor specific settings\n"""
+    def __init__(self, incXByte=None, incYByte=None):
+        self.incXByte = incXByte
+        self.incYByte = incYByte
+
+    def __repr__(self):
+        ltime = self.lastRawSAMIPTime
+        msg = "<PyTrios SAMIP, last measurement at {0}>".format(ltime)
+        return msg
 
 
 class TInfo(object):
@@ -307,6 +324,7 @@ class TChannel(object):
         self.TInfo = TInfo()
         self.TMicroFlu = TMicroFlu()
         self.TSAM = TSAM()
+        self.TSAMIP = TSAMIP()
         self.verbosity = verbosity
         self.serial = None  # recursively link ser object when query received
         self.lasttrigger = None
