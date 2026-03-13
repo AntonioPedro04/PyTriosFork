@@ -463,8 +463,10 @@ class TriosManager(object):
                     for s in sams_included if self.tc[s].is_finished()]
 
             self.busy = False
-            pre_incs = [None]
-            post_incs = [None]
+            pre_incs = [self.tc[s].TSAMIP.incXByte
+                    for s in sams_included if self.tc[s].is_finished()]
+            post_incs = [self.tc[s].TSAMIP.incYByte
+                    for s in sams_included if self.tc[s].is_finished()]
             temp_incs = [None]
             # specs, sids, itimes may be empty lists, Last three fields for forward compatibility
             return trigger_id, specs, sids, itimes, pre_incs, post_incs, temp_incs
