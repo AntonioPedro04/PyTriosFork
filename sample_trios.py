@@ -73,7 +73,7 @@ def parse_args():
 if __name__ == '__main__':
 
     import debugpy
-    debugpy.listen(("localhost", 8001)) 
+    debugpy.listen(("localhost", 5600)) 
     print("⏳ Waiting for debugger attach...")
     debugpy.wait_for_client() 
 

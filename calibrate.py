@@ -1,4 +1,5 @@
 import ramses_calibrate as rc
+import calibrate_tilt as ct
 import numpy as np
 import argparse
 import csv
@@ -21,35 +22,62 @@ def calibrateData(filePath):
             serialln = sample[0]
             msdate = sample[1]
             integrationTime = sample[2]
-            specData = sample[3].split(',')
+            
+            if(serialln == '514C'):
+                tiltBytes = sample[3].split(' ')
+                specData = sample[4].split(',')
 
-            specData = [int(i) for i in specData]
+                specData = [int(i) for i in specData]
 
-            calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
+                calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
 
-            calibratedSpec = calibratedSpec[1:193]
+                inclination = ct.getIncValue(tiltBytes)
 
-            print(len(calibratedSpec))
+                calibratedSpec = calibratedSpec[1:193]
 
-            calibratedAll = [serialln, msdate, integrationTime, calibratedSpec]
+                calibratedAll = [serialln, msdate, integrationTime,inclination, calibratedSpec]
 
-            calibratedData.append(calibratedAll)
-    
-    return calibratedData
+                calibratedData.append(calibratedAll)
+            else:
+                specData = sample[3].split(',')
 
-def saveCalibratedDataTxt(calibratedData, filePath):
+                specData = [int(i) for i in specData]
+
+                calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
+
+                calibratedSpec = calibratedSpec[1:193]
+
+                calibratedAll = [serialln, msdate, integrationTime, calibratedSpec]
+
+                calibratedData.append(calibratedAll)
+        
+    return calibratedData, serialln
+
+def saveCalibratedDataTxt(serialln, calibratedData, filePath):
     with open('./tmp/'+filePath, "w") as f:
+        if(serialln == '514C'):
+            for calibratedSample in calibratedData:
 
-        for calibratedSample in calibratedData:
+                serialln, msdate, integrationTime, inclination = calibratedSample[0], calibratedSample[1], calibratedSample[2], calibratedSample[3]
+                f.write(f'{serialln} {msdate} {integrationTime} {inclination} ')
+                calibratedSpec = calibratedSample[4]
 
-            serialln, msdate, integrationTime = calibratedSample[0], calibratedSample[1], calibratedSample[2]
-            f.write(f'{serialln} {msdate} {integrationTime} ')
-            calibratedSpec = calibratedSample[3]
+                for value in calibratedSpec:
+                    f.write(f'{value} ')
 
-            for value in calibratedSpec:
-                f.write(f'{value} ')
+                f.write('\n')  
+        else:
+            for calibratedSample in calibratedData:
 
-            f.write('\n')  
+                serialln, msdate, integrationTime = calibratedSample[0], calibratedSample[1], calibratedSample[2]
+                f.write(f'{serialln} {msdate} {integrationTime} ')
+                calibratedSpec = calibratedSample[3]
+
+                for value in calibratedSpec:
+                    f.write(f'{value} ')
+
+                f.write('\n') 
+
 
 def saveCalibratedDataCsv(calibratedData, filePath):
 
@@ -102,34 +130,41 @@ def plotCalibration(filePath):
     plt.show()
     return
 
+import os
+
 def animateCalibration(filePath):
 
-    calibrationDf = pd.read_csv('./tmp/'+filePath)
+    calibrationDf = pd.read_csv('./tmp/' + filePath)
 
     numRows = len(calibrationDf)
-    fig,axs = plt.subplots()
+    fig, axs = plt.subplots()
+
     waveLengths = calibrationDf.columns[3:]
     waveLengths = [float(x) for x in waveLengths]
-    irradianceValues = calibrationDf.iloc[0,3:]
-    linePlot = axs.plot(waveLengths,irradianceValues)[0]
+
+    irradianceValues = calibrationDf.iloc[0, 3:]
+    linePlot = axs.plot(waveLengths, irradianceValues)[0]
+
     yTicksVector = np.arange(0, 0.301, 0.05)
     xTicksVector = np.arange(320, 950, 100)
 
-    axs.set(xlabel='Wavelenght(nm)', ylabel='Irradiance(W/m²)', xticks=xTicksVector, yticks=yTicksVector)
-    # plt.show()
+    axs.set(
+        xlabel='Wavelenght(nm)',
+        ylabel='Irradiance(W/m²)',
+        xticks=xTicksVector,
+        yticks=yTicksVector
+    )
 
     def update(frame):
-        curMsDate = calibrationDf.iloc[frame,1] 
-        # axs.set_label(curMsDate)
+        curMsDate = calibrationDf.iloc[frame, 1]
         irradianceValues = calibrationDf.iloc[frame, 3:]
         linePlot.set_ydata(irradianceValues)
-        return linePlot
-    
-    ani = animation.FuncAnimation(fig=fig, func=update, frames=numRows, interval=1000)
-    # plt.show()
-    ani.save(filename="./tmp/pillow_example.mp4", writer="ffmpeg")
+        return linePlot,
 
-    return
+    ani = animation.FuncAnimation(fig=fig, func=update, frames=numRows, interval=1000)
+
+    outputPath = os.path.join("./tmp", filePath.replace(".csv", ".mp4"))
+    ani.save(filename=outputPath, writer="ffmpeg")
 
 if __name__ == '__main__':
    
@@ -140,9 +175,9 @@ if __name__ == '__main__':
 
     args = parseArgs()
 
-    calibratedData = calibrateData(args.inputFile)
-    saveCalibratedDataTxt(calibratedData, args.outputFile + '.txt')
+    calibratedData, serialln = calibrateData(args.inputFile)
+    saveCalibratedDataTxt(serialln, calibratedData, args.outputFile + '.txt')
     saveCalibratedDataCsv(calibratedData, args.outputFile + '.csv')
 
     plotCalibration(args.outputFile + '.csv')
-    animateCalibration(args.outputFile + '.csv')
+    # animateCalibration(args.outputFile + '.csv')
