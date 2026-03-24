@@ -33,7 +33,6 @@ def run_sample(port, repeat=1, type=1, inttime=0, file=None):
     if type == 1:
         log.info("Starting G1 radiometry manager")
         rad_manager = radiometer_manager.TriosManager(port)
-        time.sleep(5)
 
     elif type == 2:
         log.info("Starting G2 radiometry manager")
@@ -45,7 +44,7 @@ def run_sample(port, repeat=1, type=1, inttime=0, file=None):
             try:
                 single_sample(rad_manager, inttime, file)
                 repeat = repeat - 1
-                time.sleep(5)
+                time.sleep(1)
             except KeyboardInterrupt:
                 repeat = 0
 

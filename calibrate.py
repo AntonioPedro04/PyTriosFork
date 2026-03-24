@@ -1,4 +1,5 @@
 import pySAS.PyTriosFork.ramses_calibrate as rc
+import pySAS.PyTriosFork.calibrate_tilt as ct
 import numpy as np
 import argparse
 import csv
@@ -21,21 +22,36 @@ def calibrateData(filePath):
             serialln = sample[0]
             msdate = sample[1]
             integrationTime = sample[2]
-            specData = sample[3].split(',')
+            
+            if(serialln == '514C'):
+                tiltBytes = sample[3].split(' ')
+                specData = sample[4].split(',')
 
-            specData = [int(i) for i in specData]
+                specData = [int(i) for i in specData]
 
-            calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
+                calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
 
-            calibratedSpec = calibratedSpec[1:193]
+                inclination = ct.getIncValue(tiltBytes)
 
-            print(len(calibratedSpec))
+                calibratedSpec = calibratedSpec[1:193]
 
-            calibratedAll = [serialln, msdate, integrationTime, calibratedSpec]
+                calibratedAll = [serialln, msdate, integrationTime,inclination, calibratedSpec]
 
-            calibratedData.append(calibratedAll)
-    
-    return calibratedData
+                calibratedData.append(calibratedAll)
+            else:
+                specData = sample[4].split(',')
+
+                specData = [int(i) for i in specData]
+
+                calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
+
+                calibratedSpec = calibratedSpec[1:193]
+
+                calibratedAll = [serialln, msdate, integrationTime, calibratedSpec]
+
+                calibratedData.append(calibratedAll)
+        
+    return calibratedData, serialln
 
 def calibrateDataFromPySAS(deque):
 
@@ -50,35 +66,60 @@ def calibrateDataFromPySAS(deque):
         serialln = sample[0]
         msdate = sample[1]
         integrationTime = sample[2]
-        specData = sample[3].split(',')
+        if(serialln == '514C'):
+            tiltBytes = sample[3].split(' ')
+            specData = sample[4].split(',')
 
-        specData = [int(i) for i in specData]
+            specData = [int(i) for i in specData]
 
-        calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
+            calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
 
-        calibratedSpec = calibratedSpec[1:193]
+            inclination = ct.getIncValue(tiltBytes)
 
-        print(len(calibratedSpec))
+            calibratedSpec = calibratedSpec[1:193]
 
-        calibratedAll = [serialln, msdate, integrationTime, calibratedSpec]
+            calibratedAll = [serialln, msdate, integrationTime, calibratedSpec, inclination]
 
-        calibratedData[serialln] = calibratedAll
+            calibratedData[serialln] = calibratedAll
+        else:
+            specData = sample[4].split(',')
+
+            specData = [int(i) for i in specData]
+
+            calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
+
+            calibratedSpec = calibratedSpec[1:193]
+
+            calibratedAll = [serialln, msdate, integrationTime, calibratedSpec]
+
+            calibratedData[serialln] = calibratedAll
 
     return calibratedData
 
-def saveCalibratedDataTxt(calibratedData, filePath):
+def saveCalibratedDataTxt(serialln, calibratedData, filePath):
     with open('./tmp/'+filePath, "w") as f:
+        if(serialln == '514C'):
+            for calibratedSample in calibratedData:
 
-        for calibratedSample in calibratedData:
+                serialln, msdate, integrationTime, inclination = calibratedSample[0], calibratedSample[1], calibratedSample[2], calibratedSample[3]
+                f.write(f'{serialln} {msdate} {integrationTime} {inclination} ')
+                calibratedSpec = calibratedSample[4]
 
-            serialln, msdate, integrationTime = calibratedSample[0], calibratedSample[1], calibratedSample[2]
-            f.write(f'{serialln} {msdate} {integrationTime} ')
-            calibratedSpec = calibratedSample[3]
+                for value in calibratedSpec:
+                    f.write(f'{value} ')
 
-            for value in calibratedSpec:
-                f.write(f'{value} ')
+                f.write('\n')  
+        else:
+            for calibratedSample in calibratedData:
 
-            f.write('\n')  
+                serialln, msdate, integrationTime = calibratedSample[0], calibratedSample[1], calibratedSample[2]
+                f.write(f'{serialln} {msdate} {integrationTime} ')
+                calibratedSpec = calibratedSample[3]
+
+                for value in calibratedSpec:
+                    f.write(f'{value} ')
+
+                f.write('\n') 
 
 def saveCalibratedDataCsv(calibratedData, filePath):
 
@@ -174,4 +215,4 @@ if __name__ == '__main__':
     saveCalibratedDataCsv(calibratedData, args.outputFile + '.csv')
 
     plotCalibration(args.outputFile + '.csv')
-    animateCalibration(args.outputFile + '.csv')
+    # animateCalibration(args.outputFile + '.csv')
