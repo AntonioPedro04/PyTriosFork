@@ -25,6 +25,6 @@ def getIncValue(bytes):
 
     inclination_deg = math.degrees(inclination)
 
-    return inclination_deg
+    return X,Y
 
 print(getIncValue([134,154]))

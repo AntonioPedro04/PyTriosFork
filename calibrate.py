@@ -74,11 +74,11 @@ def calibrateDataFromPySAS(deque):
 
             calibratedSpec = rc.raw2cal_Air(specData,msdate,serialln,calData, wlOut=np.arange(320, 955, 3.3))
 
-            inclination = ct.getIncValue(tiltBytes)
+            pitch,roll = ct.getIncValue(tiltBytes)
 
             calibratedSpec = calibratedSpec[1:193]
 
-            calibratedAll = [serialln, msdate, integrationTime, calibratedSpec, inclination]
+            calibratedAll = [serialln, msdate, integrationTime, calibratedSpec, pitch, roll]
 
             calibratedData[serialln] = calibratedAll
         else:
