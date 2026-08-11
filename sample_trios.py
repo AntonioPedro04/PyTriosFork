@@ -15,7 +15,7 @@ import pySAS.PyTriosFork.pytrios.radman as radiometer_manager
 
 def single_sample(radiometry_manager, inttime, file):
     log.info(f"Trigger measurement")
-    trig_id, specs, sids, itimes, preincs, postincs, inctemps  = radiometry_manager.sample_all(datetime.datetime.now(), inttime=inttime)
+    trig_id, specs, sids, itimes, preincs, postincs, inctemps  = radiometry_manager.sample_all(datetime.datetime.now(datetime.timezone.utc), inttime=inttime)
 
     for i, sid in enumerate(sids):
         log.info(f"Received spectrum from {sid}: {trig_id} | int-time: {itimes[i]} ms | Spectrum: {specs[i][0:3]}...{specs[i][-3::]}")
